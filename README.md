@@ -150,11 +150,22 @@ ollama list
 
 **Note**: First download takes 5-15 minutes depending on your internet speed and model size. Models are cached locally after download.
 
-### Step 5: Verify Installation
+### Step 5: Configure Models (Optional)
+
+Edit the `.env` file to configure models and settings:
+
+# Edit .env with your preferred models (optional - defaults work fine)
+# OLLAMA_MODEL=qwen2.5
+# EMBEDDING_MODEL=intfloat/e5-large-v2
+# TOP_K=3
+
+See the [Configuration](#-configuration) section for details.
+
+### Step 6: Verify Installation
 
 **Test Ollama:**
 ```bash
-ollama run phi3 "Hello, how are you?"
+ollama run qwen2.5 "Hello, how are you?"
 ```
 
 **Test Python dependencies:**
@@ -181,9 +192,6 @@ python indexer.py ./pdf
 # Index PDFs in ./pdf folder
 python indexer.py ./pdf
 
-# Index PDFs in custom folder with custom index name
-python indexer.py /path/to/pdfs my_index
-```
 
 **What happens:**
 1. Extracts text from all PDFs in the folder
@@ -212,48 +220,81 @@ python chatbot.py
 python chatbot.py my_index
 ```
 
-**Using a different Ollama model:**
-```bash
-# Set environment variable
-export OLLAMA_MODEL=llama3  # macOS/Linux
-set OLLAMA_MODEL=llama3      # Windows PowerShell
-$env:OLLAMA_MODEL="llama3"   # Windows CMD
+## 🔧 Configuration
 
+### Using .env File (Recommended)
+
+The easiest way to configure models and settings is using a `.env` file in the project root.
+
+**Setup:**
+1. Copy the example file: `cp .env.example .env`
+2. Edit `.env` with your preferred settings:
+
+```bash
+# .env file
+OLLAMA_MODEL=qwen2.5
+EMBEDDING_MODEL=intfloat/e5-large-v2
+TOP_K=3
+```
+
+**Available Configuration Options:**
+
+**OLLAMA_MODEL** - Ollama LLM model name
+- Options: `qwen2.5`, `llama3.1`, `llama3`, `mistral`, `phi3`, `deepseek-r1:7b`
+- Default: `qwen2.5`
+
+**EMBEDDING_MODEL** - HuggingFace embedding model name
+- Options:
+  - `intfloat/e5-large-v2` (recommended - good balance)
+  - `sentence-transformers/paraphrase-multilingual-mpnet-base-v2` (best quality)
+  - `BAAI/bge-large-en-v1.5` (best for English-only)
+  - `sentence-transformers/all-mpnet-base-v2` (good default)
+- Default: `intfloat/e5-large-v2`
+
+**TOP_K** - Number of similar documents to retrieve
+- Options: Any positive integer (typically 3-10)
+- Default: `3`
+- Higher values = more context but slower
+
+**After changing `.env`:**
+- For LLM changes: Just restart `chatbot.py`
+- For embedding changes: **Re-index required** (`rm -rf faiss_index && python indexer.py ./pdf`)
+
+### Alternative: Environment Variables
+
+You can also set environment variables directly (useful for one-time overrides):
+
+**macOS/Linux:**
+```bash
+export OLLAMA_MODEL=llama3.1
+export EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+export TOP_K=5
 python chatbot.py
 ```
 
-**Or edit `chatbot.py` line 12:**
-```python
-MODEL_NAME = "phi3"  # Change to your preferred model
+**Windows PowerShell:**
+```powershell
+$env:OLLAMA_MODEL="llama3.1"
+$env:EMBEDDING_MODEL="sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+$env:TOP_K="5"
+python chatbot.py
 ```
 
-## 🔧 Configuration
-
-### Environment Variables
-
-You can customize the system using environment variables:
-
-**Embedding Model:**
-```bash
-export EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"  # macOS/Linux
-set EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2        # Windows
+**Windows CMD:**
+```cmd
+set OLLAMA_MODEL=llama3.1
+set EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+set TOP_K=5
+python chatbot.py
 ```
 
-**Ollama Model:**
-```bash
-export OLLAMA_MODEL="phi3"  # macOS/Linux
-set OLLAMA_MODEL=phi3       # Windows
-```
+### Advanced Configuration
 
-### Code Configuration
+For advanced customization, you can edit the source files:
 
-Edit `chatbot.py` to change:
-- `TOP_K`: Number of similar documents to retrieve (default: 3)
-- `MODEL_NAME`: Default Ollama model name (default: "phi3")
-
-Edit `indexer.py` to change:
+**Edit `indexer.py`** to change:
 - Chunk size and overlap in `RecursiveCharacterTextSplitter`
-- Embedding model defaults
+- PDF extraction settings
 
 ## 📁 Project Structure
 
@@ -262,6 +303,7 @@ pdfgptindexer-offline/
 ├── indexer.py          # PDF indexing script
 ├── chatbot.py          # Chatbot query interface
 ├── requirements.txt    # Python dependencies
+├── .env                # Your configuration (create from .env.example)
 ├── README.md          # This file
 ├── LICENSE            # License file
 └── pdf/               # Place your PDF files here (optional)
@@ -351,16 +393,20 @@ pip install -r requirements.txt
 
 ### Embedding Models
 
-- **all-MiniLM-L6-v2** (default): Fast, small (~80MB), good quality
-- **all-mpnet-base-v2**: Better quality, slower, larger (~420MB)
-- **paraphrase-multilingual-MiniLM-L12-v2**: Multi-language support
+- **intfloat/e5-large-v2** (default): Excellent quality, good balance (~560MB)
+- **sentence-transformers/paraphrase-multilingual-mpnet-base-v2**: Best quality, multilingual (~900MB)
+- **BAAI/bge-large-en-v1.5**: Best for English-only (~1.3GB)
+- **sentence-transformers/all-mpnet-base-v2**: Good default (~420MB)
+- **sentence-transformers/all-MiniLM-L6-v2**: Fast, small (~80MB)
 
 ### LLM Models (Ollama)
 
-- **phi3** (~3.8GB): Fast, efficient, good for workshops
-- **llama3** (~4.7GB): Better quality, balanced performance
-- **mistral** (~4.1GB): Good balance of speed and quality
-- **llama3:8b**: Larger variant for better quality
+- **qwen2.5** (default): Excellent quality, great reasoning (~4.4GB)
+- **llama3.1**: Best overall, improved from llama3 (~4.7GB)
+- **llama3**: Good quality, balanced performance (~4.7GB)
+- **mistral**: Fast and efficient (~4.1GB)
+- **phi3**: Fast, efficient, good for workshops (~3.8GB)
+- **deepseek-r1:7b**: Best reasoning capabilities (~6.5GB)
 
 ## 🎓 Workshop Setup Tips
 
@@ -393,7 +439,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Larger PDFs take longer to index - be patient
 - Keep your PDFs organized in folders for easier management
 - The FAISS index can be reused - you don't need to re-index unless PDFs change
-- Use `TOP_K` to control how many document chunks are retrieved (more = better context but slower)
+- Configure `TOP_K` in `.env` file to control how many document chunks are retrieved (more = better context but slower)
+- All model configuration is done via `.env` file - no need to edit source code
 
 ---
 
