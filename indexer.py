@@ -3,9 +3,12 @@ import sys
 from pathlib import Path
 import fitz  # PyMuPDF
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings  # Changed from OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-# Removed dotenv import - no longer needed for API keys
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 def extract_text_from_pdf(pdf_path):
     """Extract text from PDF using PyMuPDF"""
@@ -120,8 +123,8 @@ def main():
     else:
         index_path = "faiss_index"
     
-    # Optional: allow custom embedding model
-    embedding_model = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+    # Get embedding model from .env file
+    embedding_model = os.getenv("EMBEDDING_MODEL", "intfloat/e5-large-v2")
     
     # Index PDFs
     success = index_pdfs(pdf_folder, index_path, embedding_model)

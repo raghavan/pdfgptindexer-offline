@@ -1,18 +1,26 @@
 import os
 import sys
-from langchain_huggingface import HuggingFaceEmbeddings  # Changed from OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_community.llms import Ollama  # Changed from ChatOpenAI
+from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from dotenv import load_dotenv
 
-# Configuration
-TOP_K = 3  # Number of similar documents to retrieve
-MODEL_NAME = "phi3"  # Ollama model name (default: llama3, mistral, phi3, etc.)
+# Load environment variables
+load_dotenv()
 
-def load_vectorstore(index_path="faiss_index", embedding_model="sentence-transformers/all-MiniLM-L6-v2"):
+# Configuration from .env file
+TOP_K = int(os.getenv("TOP_K", "3"))  # Number of similar documents to retrieve
+MODEL_NAME = os.getenv("OLLAMA_MODEL", "qwen2.5")  # Ollama model name
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "intfloat/e5-large-v2")  # Embedding model
+
+def load_vectorstore(index_path="faiss_index", embedding_model=None):
     """Load FAISS index from disk"""
+    if embedding_model is None:
+        embedding_model = EMBEDDING_MODEL
+    
     if not os.path.exists(index_path):
         print(f"Error: Index not found at '{index_path}'")
         print("Please run indexer.py first to create the index!")
@@ -72,9 +80,6 @@ def main():
     print("PDF RAG Chatbot (Fully Local)")
     print("=" * 60)
     
-    # Get model name from environment or use default
-    model_name = os.getenv("OLLAMA_MODEL", MODEL_NAME)
-    
     # Check if Ollama is running
     try:
         import requests
@@ -89,7 +94,7 @@ def main():
         print("  - Linux: curl -fsSL https://ollama.com/install.sh | sh")
         print("  - Windows: Download from https://ollama.com")
         print("\nThen start Ollama and pull a model:")
-        print(f"  ollama pull {model_name}")
+        print(f"  ollama pull {MODEL_NAME}")
         sys.exit(1)
     
     # Get index path
@@ -97,25 +102,24 @@ def main():
     
     # Load vectorstore
     print(f"Loading index from '{index_path}'...")
-    embedding_model = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-    vectorstore = load_vectorstore(index_path, embedding_model)
+    vectorstore = load_vectorstore(index_path)
     if vectorstore is None:
         sys.exit(1)
     
     # Initialize LLM (Ollama)
-    print(f"Initializing Ollama model '{model_name}'...")
+    print(f"Initializing Ollama model '{MODEL_NAME}'...")
     try:
-        llm = Ollama(model=model_name, temperature=0.1)
+        llm = OllamaLLM(model=MODEL_NAME, temperature=0.1)
         # Test connection
         llm.invoke("test")
         print(f"✓ Connected to Ollama")
     except Exception as e:
-        print(f"Error: Could not load model '{model_name}'")
-        print(f"Make sure you've pulled the model: ollama pull {model_name}")
+        print(f"Error: Could not load model '{MODEL_NAME}'")
+        print(f"Make sure you've pulled the model: ollama pull {MODEL_NAME}")
         print(f"Available models: ollama list")
         sys.exit(1)
     
-    print(f"\n✓ Ready! Using {model_name}, retrieving top {TOP_K} matches")
+    print(f"\n✓ Ready! Using {MODEL_NAME}, retrieving top {TOP_K} matches")
     print("Type 'exit' to quit")
     print("-" * 60)
     
