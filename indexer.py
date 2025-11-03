@@ -124,7 +124,7 @@ def main():
         index_path = "faiss_index"
     
     # Get embedding model from .env file
-    embedding_model = os.getenv("EMBEDDING_MODEL", "intfloat/e5-large-v2")
+    embedding_model = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
     
     # Index PDFs
     success = index_pdfs(pdf_folder, index_path, embedding_model)

@@ -155,8 +155,8 @@ ollama list
 Edit the `.env` file to configure models and settings:
 
 # Edit .env with your preferred models (optional - defaults work fine)
-# OLLAMA_MODEL=qwen2.5
-# EMBEDDING_MODEL=intfloat/e5-large-v2
+# OLLAMA_MODEL=phi3
+# EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 # TOP_K=3
 
 See the [Configuration](#-configuration) section for details.
@@ -165,7 +165,7 @@ See the [Configuration](#-configuration) section for details.
 
 **Test Ollama:**
 ```bash
-ollama run qwen2.5 "Hello, how are you?"
+ollama run phi3 "Hello, how are you?"
 ```
 
 **Test Python dependencies:**
@@ -232,24 +232,25 @@ The easiest way to configure models and settings is using a `.env` file in the p
 
 ```bash
 # .env file
-OLLAMA_MODEL=qwen2.5
-EMBEDDING_MODEL=intfloat/e5-large-v2
+OLLAMA_MODEL=phi3
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 TOP_K=3
 ```
 
 **Available Configuration Options:**
 
 **OLLAMA_MODEL** - Ollama LLM model name
-- Options: `qwen2.5`, `llama3.1`, `llama3`, `mistral`, `phi3`, `deepseek-r1:7b`
-- Default: `qwen2.5`
+- Options: `phi3`, `qwen2.5`, `llama3.1`, `llama3`, `mistral`, `deepseek-r1:7b`
+- Default: `phi3`
 
 **EMBEDDING_MODEL** - HuggingFace embedding model name
 - Options:
-  - `intfloat/e5-large-v2` (recommended - good balance)
+  - `sentence-transformers/all-MiniLM-L6-v2` (default - fast, small, perfect for workshops)
+  - `intfloat/e5-large-v2` (good balance, better quality)
   - `sentence-transformers/paraphrase-multilingual-mpnet-base-v2` (best quality)
   - `BAAI/bge-large-en-v1.5` (best for English-only)
   - `sentence-transformers/all-mpnet-base-v2` (good default)
-- Default: `intfloat/e5-large-v2`
+- Default: `sentence-transformers/all-MiniLM-L6-v2`
 
 **TOP_K** - Number of similar documents to retrieve
 - Options: Any positive integer (typically 3-10)
@@ -393,19 +394,19 @@ pip install -r requirements.txt
 
 ### Embedding Models
 
-- **intfloat/e5-large-v2** (default): Excellent quality, good balance (~560MB)
+- **sentence-transformers/all-MiniLM-L6-v2** (default): Fast, small, perfect for workshops (~80MB)
+- **intfloat/e5-large-v2**: Excellent quality, good balance (~560MB)
 - **sentence-transformers/paraphrase-multilingual-mpnet-base-v2**: Best quality, multilingual (~900MB)
 - **BAAI/bge-large-en-v1.5**: Best for English-only (~1.3GB)
 - **sentence-transformers/all-mpnet-base-v2**: Good default (~420MB)
-- **sentence-transformers/all-MiniLM-L6-v2**: Fast, small (~80MB)
 
 ### LLM Models (Ollama)
 
-- **qwen2.5** (default): Excellent quality, great reasoning (~4.4GB)
+- **phi3** (default): Fast, efficient, good for workshops (~3.8GB)
+- **qwen2.5**: Excellent quality, great reasoning (~4.4GB)
 - **llama3.1**: Best overall, improved from llama3 (~4.7GB)
 - **llama3**: Good quality, balanced performance (~4.7GB)
 - **mistral**: Fast and efficient (~4.1GB)
-- **phi3**: Fast, efficient, good for workshops (~3.8GB)
 - **deepseek-r1:7b**: Best reasoning capabilities (~6.5GB)
 
 ## 🎓 Workshop Setup Tips

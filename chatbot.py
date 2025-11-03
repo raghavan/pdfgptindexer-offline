@@ -13,8 +13,8 @@ load_dotenv()
 
 # Configuration from .env file
 TOP_K = int(os.getenv("TOP_K", "3"))  # Number of similar documents to retrieve
-MODEL_NAME = os.getenv("OLLAMA_MODEL", "qwen2.5")  # Ollama model name
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "intfloat/e5-large-v2")  # Embedding model
+MODEL_NAME = os.getenv("OLLAMA_MODEL", "phi3")  # Ollama model name
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")  # Embedding model
 
 def load_vectorstore(index_path="faiss_index", embedding_model=None):
     """Load FAISS index from disk"""
