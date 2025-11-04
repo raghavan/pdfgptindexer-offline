@@ -1,15 +1,9 @@
 # PDF GPT Indexer - Fully Local RAG System
 
-A fully local Retrieval-Augmented Generation (RAG) system for indexing and querying PDF documents. **No API keys required** - everything runs locally on your machine!
+A fully local Retrieval-Augmented Generation (RAG) system for indexing and querying PDF documents. 
 
-## 🌟 Features
+**No API keys required** - everything runs locally on your machine!
 
-- ✅ **Fully Local**: No API keys or external services needed
-- ✅ **Privacy**: All data processing happens on your machine
-- ✅ **Free**: No usage costs or rate limits
-- ✅ **Offline Capable**: Works without internet after initial setup
-- ✅ **Easy to Use**: Simple command-line interface
-- ✅ **Workshop Ready**: Perfect for educational environments
 
 ## 🏗️ Architecture
 
@@ -24,7 +18,7 @@ This system uses:
 
 - Python 3.8 or higher
 - At least 8GB RAM (16GB recommended)
-- ~10GB free disk space (for models and dependencies)
+- Atleast 5GB free disk space (for models and dependencies)
 - Internet connection for initial setup only
 
 ## 🚀 Installation
@@ -79,7 +73,9 @@ pip install faiss-cpu
 
 ### Step 3: Install Ollama
 
-Ollama is required to run the local LLM. Follow platform-specific instructions below.
+Ollama is an open-source tool that allows you to set up and run large language models (LLMs) and other AI models locally on your own computer. 
+
+🕵️‍♂️ Your data doesn't leave your computer 
 
 #### macOS
 
@@ -131,35 +127,34 @@ sudo systemctl start ollama
 
 After Ollama is installed and running, download a model. Choose based on your needs:
 
-**For faster, smaller models (recommended for workshops):**
+**For faster, smaller model (default)**
 ```bash
 ollama pull phi3
 ```
 
-**For better quality (but larger/slower):**
+**For better quality (but larger in Size)**
 ```bash
-ollama pull llama3
-# or
-ollama pull mistral
-```
-
-**Check available models:**
-```bash
-ollama list
+ollama pull qwen2.5
 ```
 
 **Note**: First download takes 5-15 minutes depending on your internet speed and model size. Models are cached locally after download.
 
-### Step 5: Configure Models (Optional)
+### Step 5: Configure Embedding Model (Optional)
 
-Edit the `.env` file to configure models and settings:
+Edit the `.env` file to configure embeedding model
 
-# Edit .env with your preferred models (optional - defaults work fine)
-# OLLAMA_MODEL=phi3
-# EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-# TOP_K=3
+_(This will be automatically **downloaded first time** when you run the indexer)_
 
-See the [Configuration](#-configuration) section for details.
+**For faster, smaller model (default)**
+```bash
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+```
+
+**For better quality (but larger in Size)**
+```bash
+EMBEDDING_MODEL=intfloat/e5-large-v2
+```
+
 
 ### Step 6: Verify Installation
 
@@ -168,35 +163,28 @@ See the [Configuration](#-configuration) section for details.
 ollama run phi3 "Hello, how are you?"
 ```
 
-**Test Python dependencies:**
-```bash
-python -c "import langchain; import fitz; print('✓ All dependencies installed')"
-```
 
 ## 📖 Usage
 
 ### Step 1: Index PDF Files
 
-Place your PDF files in a folder (e.g., `./pdf`), then run:
+Place your PDF files in a folder (e.g., `./
+pdf`), then run:
 
 ```bash
-python indexer.py ./pdf
+python indexer.py 
 ```
 
 **Options:**
-- First argument: Path to PDF folder (default: `./pdf`)
+- First argument: Path to other PDF folder (default: `./pdf`)
 - Second argument: Index output path (default: `faiss_index`)
 
-**Example:**
-```bash
-# Index PDFs in ./pdf folder
-python indexer.py ./pdf
 
 
 **What happens:**
 1. Extracts text from all PDFs in the folder
 2. Splits text into chunks
-3. Generates embeddings using local model (first run downloads the model)
+3. Generates embeddings using local model (first run downloads the embedding model)
 4. Creates FAISS vector index
 5. Saves index to disk
 
@@ -211,14 +199,6 @@ python chatbot.py
 **Options:**
 - First argument: Path to index (default: `faiss_index`)
 
-**Example:**
-```bash
-# Use default index
-python chatbot.py
-
-# Use custom index
-python chatbot.py my_index
-```
 
 ## 🔧 Configuration
 
@@ -259,57 +239,8 @@ TOP_K=3
 
 **After changing `.env`:**
 - For LLM changes: Just restart `chatbot.py`
-- For embedding changes: **Re-index required** (`rm -rf faiss_index && python indexer.py ./pdf`)
+- For embedding changes: **Re-index required** (`rm -rf faiss_index && python indexer.py`)
 
-### Alternative: Environment Variables
-
-You can also set environment variables directly (useful for one-time overrides):
-
-**macOS/Linux:**
-```bash
-export OLLAMA_MODEL=llama3.1
-export EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
-export TOP_K=5
-python chatbot.py
-```
-
-**Windows PowerShell:**
-```powershell
-$env:OLLAMA_MODEL="llama3.1"
-$env:EMBEDDING_MODEL="sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
-$env:TOP_K="5"
-python chatbot.py
-```
-
-**Windows CMD:**
-```cmd
-set OLLAMA_MODEL=llama3.1
-set EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
-set TOP_K=5
-python chatbot.py
-```
-
-### Advanced Configuration
-
-For advanced customization, you can edit the source files:
-
-**Edit `indexer.py`** to change:
-- Chunk size and overlap in `RecursiveCharacterTextSplitter`
-- PDF extraction settings
-
-## 📁 Project Structure
-
-```
-pdfgptindexer-offline/
-├── indexer.py          # PDF indexing script
-├── chatbot.py          # Chatbot query interface
-├── requirements.txt    # Python dependencies
-├── .env                # Your configuration (create from .env.example)
-├── README.md          # This file
-├── LICENSE            # License file
-└── pdf/               # Place your PDF files here (optional)
-    └── *.pdf
-```
 
 ## 🐛 Troubleshooting
 
@@ -355,7 +286,7 @@ python indexer.py ./pdf
 **Problem**: Out of memory errors during indexing
 
 **Solutions:**
-- Reduce chunk size in `indexer.py` (line 48)
+- Reduce chunk size in `indexer.py`
 - Use a smaller embedding model
 - Close other applications
 - Process PDFs in smaller batches
@@ -364,7 +295,7 @@ python indexer.py ./pdf
 
 If you have a GPU and want faster embeddings:
 
-**Edit `indexer.py` line 85:**
+**Edit `indexer.py`**
 ```python
 model_kwargs={'device': 'cuda'}  # Change from 'cpu' to 'cuda'
 ```
@@ -390,34 +321,7 @@ venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 ```
 
-## 📊 Model Recommendations
 
-### Embedding Models
-
-- **sentence-transformers/all-MiniLM-L6-v2** (default): Fast, small, perfect for workshops (~80MB)
-- **intfloat/e5-large-v2**: Excellent quality, good balance (~560MB)
-- **sentence-transformers/paraphrase-multilingual-mpnet-base-v2**: Best quality, multilingual (~900MB)
-- **BAAI/bge-large-en-v1.5**: Best for English-only (~1.3GB)
-- **sentence-transformers/all-mpnet-base-v2**: Good default (~420MB)
-
-### LLM Models (Ollama)
-
-- **phi3** (default): Fast, efficient, good for workshops (~3.8GB)
-- **qwen2.5**: Excellent quality, great reasoning (~4.4GB)
-- **llama3.1**: Best overall, improved from llama3 (~4.7GB)
-- **llama3**: Good quality, balanced performance (~4.7GB)
-- **mistral**: Fast and efficient (~4.1GB)
-- **deepseek-r1:7b**: Best reasoning capabilities (~6.5GB)
-
-## 🎓 Workshop Setup Tips
-
-For conducting workshops with multiple students:
-
-1. **Pre-download models**: Have students download models before the workshop
-2. **Shared setup script**: Create a setup script for easy installation
-3. **Test PDFs**: Provide sample PDFs for testing
-4. **Troubleshooting guide**: Share common issues and solutions
-5. **Backup plan**: Have pre-indexed FAISS indexes ready if indexing fails
 
 ## 📝 License
 
@@ -445,4 +349,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-**Happy Indexing! 🚀**
+**Happy Searching! 🚀**
