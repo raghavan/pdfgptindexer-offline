@@ -202,13 +202,7 @@ python chatbot.py
 
 ## 🔧 Configuration
 
-### Using .env File (Recommended)
-
-The easiest way to configure models and settings is using a `.env` file in the project root.
-
-**Setup:**
-1. Copy the example file: `cp .env.example .env`
-2. Edit `.env` with your preferred settings:
+### Use .env File
 
 ```bash
 # .env file
