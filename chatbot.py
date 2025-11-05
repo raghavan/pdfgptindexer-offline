@@ -6,6 +6,7 @@ from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -51,20 +52,34 @@ def format_docs(docs):
     """Format documents for the prompt"""
     return "\n\n".join([doc.page_content for doc in docs])
 
-def generate_answer(llm, query, context_docs):
-    """Generate answer using LLM with retrieved context"""
+def generate_answer(llm, query, context_docs, conversation_history=None):
+    """Generate answer using LLM with retrieved context and conversation history"""
     # Build context from documents
     context = "\n\n".join([doc.page_content for doc in context_docs])
     
-    # Create prompt template
+    # Build conversation history string
+    history_str = ""
+    if conversation_history:
+        history_str = "\n\nPrevious conversation:\n"
+        for msg in conversation_history[-6:]:  # Keep last 6 messages (3 exchanges)
+            if isinstance(msg, HumanMessage):
+                history_str += f"User: {msg.content}\n"
+            elif isinstance(msg, AIMessage):
+                history_str += f"Assistant: {msg.content}\n"
+    
+    # Create prompt template with conversation history
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a helpful assistant. Answer the question based on the provided context from PDF documents. If the context doesn't contain relevant information, say 'I don't know.' Keep your response concise and informative."),
-        ("user", "Context:\n{context}\n\nQuestion: {query}\n\nAnswer:")
+        ("system", "You are a helpful assistant. Answer the question based on the provided context from PDF documents and the conversation history. If the context doesn't contain relevant information, say 'I don't know.' Keep your response concise and informative."),
+        ("user", "Context:\n{context}{history}\n\nCurrent Question: {query}\n\nAnswer:")
     ])
     
     # Create chain
     chain = (
-        {"context": lambda x: context, "query": RunnablePassthrough()}
+        {
+            "context": lambda x: context,
+            "history": lambda x: history_str if conversation_history else "",
+            "query": RunnablePassthrough()
+        }
         | prompt
         | llm
         | StrOutputParser()
@@ -119,8 +134,11 @@ def main():
         print(f"Available models: ollama list")
         sys.exit(1)
     
+    # Initialize conversation history
+    conversation_history = []
+    
     print(f"\n✓ Ready! Using {MODEL_NAME}, retrieving top {TOP_K} matches")
-    print("Type 'exit' to quit")
+    print("Type 'exit' to quit, 'clear' to clear conversation history")
     print("-" * 60)
     
     # Main loop
@@ -134,6 +152,11 @@ def main():
         if query.lower() in ['exit', 'quit']:
             print("Goodbye!")
             break
+        
+        if query.lower() == 'clear':
+            conversation_history = []
+            print("Conversation history cleared!")
+            continue
         
         try:
             # Step 1: Find similar documents
@@ -154,11 +177,15 @@ def main():
                 print(f"\n  {i}. {source} - Score: {score:.3f} {status}")
                 print(f"     \"{text_snippet}\"")
             
-            # Step 3: Generate answer using LLM
+            # Step 3: Generate answer using LLM with conversation history
             context_docs = [doc for doc, score in docs_with_scores]
             print("\nBot: ", end="", flush=True)
-            answer = generate_answer(llm, query, context_docs)
+            answer = generate_answer(llm, query, context_docs, conversation_history)
             print(answer)
+            
+            # Step 4: Update conversation history
+            conversation_history.append(HumanMessage(content=query))
+            conversation_history.append(AIMessage(content=answer))
         
         except Exception as e:
             print(f"\nError: {e}")
