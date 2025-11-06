@@ -56,8 +56,9 @@ pip install -r requirements.txt
 
 #### Windows
 
-```powershell
+```bash
 # Create virtual environment (recommended)
+# Use CMD, powershell may not be supported
 python -m venv venv
 venv\Scripts\activate
 
