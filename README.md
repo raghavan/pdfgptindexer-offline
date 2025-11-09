@@ -14,6 +14,9 @@ This system uses:
 - **Vector Store**: FAISS for efficient similarity search
 - **LLM**: Ollama (local LLM runner)
 
+<img width="11028" height="5312" alt="image" src="https://github.com/user-attachments/assets/6338e728-8c1f-4c24-8263-395ebd002ede" />
+
+
 ## 📋 Prerequisites
 
 - Python 3.8 or higher
